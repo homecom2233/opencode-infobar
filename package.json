@@ -1,0 +1,35 @@
+{
+  "name": "opencode-infobar",
+  "version": "0.1.0",
+  "description": "Bottom status bar for OpenCode Desktop: prompt-cache hit rate, token speed, and a context ring, with click-through detail panels.",
+  "type": "module",
+  "exports": {
+    "./gui-experimental": "./gui-experimental.cjs"
+  },
+  "files": [
+    "gui-experimental.cjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "statusline",
+    "cache-hit-rate",
+    "tokens-per-second",
+    "desktop"
+  ],
+  "license": "MIT",
+  "author": "AKU36",
+  "homepage": "https://github.com/homecom2233/opencode-infobar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/homecom2233/opencode-infobar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/homecom2233/opencode-infobar/issues"
+  },
+  "scripts": {
+    "test": "node test/smoke.cjs"
+  }
+}
