@@ -1,155 +1,152 @@
 # opencode-infobar
 
-**English** · [简体中文](README.zh-CN.md)
+**简体中文** · [English](README.en.md)
 
-A bottom status bar for **OpenCode Desktop** — prompt-cache hit rate, token speed and a context ring, in one DSH-style strip. Every segment is clickable and opens the numbers behind it.
+给 **OpenCode 桌面版** 的底部加一条 DSH 风格状态栏：轮次/步数 + 速度、总 token + 缓存命中率、上下文比例环。三段都可点按弹出明细。
 
-![Session statistics card open over the status bar](assets/screenshot-stats.png)
+![会话统计卡片与底部状态栏](assets/screenshot-stats.png)
 
 ```
 ⟳ 3 轮 93 步 · 90 tok/s  │  ⛁ 16.9M tok · 缓存命中率 98%  │  ◔ 27%
 ```
 
-## Why this exists
+## 为什么要做这个
 
-OpenCode Desktop never shows you how well the prompt cache is working, how fast tokens are actually arriving, or how close the context window is to the limit. The TUI has community plugins for that, but **Desktop does not run TUI plugins** — it only mounts the GUI part (`./gui-experimental`) of a plugin, and the GUI plugin API exposes a `window.bottom` slot. This plugin fills that slot and nothing else.
+OpenCode 桌面版不显示提示词缓存的命中情况、token 的实际到达速度，也不提示上下文还剩多少。TUI 那边有社区插件能做这些，但**桌面版不加载 TUI 插件**——它只挂载插件的 GUI 部位（`./gui-experimental`），而 GUI 插件 API 提供 `window.bottom` 槽位。这个插件就只做这一件事：把它填满。
 
-## Features
+## 功能
 
-- **Three segments**, DSH-style: rounds/steps + speed │ total tokens + cache hit rate │ context ring.
-- **Click to drill in** — a card per segment, closes on outside click or `Esc`:
-  - `⟳` rounds, steps, model time, tool time, average TTFT, current speed
-  - `⛁` cache read, uncached input, output, total, session cost
-  - `◔` context used / limit / free, model, session
-- **Colour that means something** — hit rate ≥85% green, ≥70% amber, below that red; context ring fills blue, then amber at 80%, red at 95%.
-- **Light and dark** — the strip inherits the app's text colour; the cards and ring pick their palette from the app appearance mode.
-- **Zero build step** — one hand-written CommonJS file, no bundler, no dependencies, nothing to compile.
-- **Testable without the app** — `node test/smoke.cjs` renders the strip against a fake session and asserts the numbers.
+- **三段式**：轮次/步数 + 速度 │ 总 token + 缓存命中率 │ 上下文比例环
+- **点按看明细**，点空白或 `Esc` 关闭：
+  - `⟳` 轮数、步数、模型用时、工具调用用时、首 token 平均、当前速度
+  - `⛁` 缓存读取、未缓存输入、输出、合计、会话费用
+  - `◔` 上下文已用 / 上限 / 剩余、模型、会话
+- **颜色有意义**：命中率 ≥85% 绿、≥70% 橙、否则红；上下文环超过 80% 转橙、95% 转红
+- **跟随主题**：状态栏继承 App 文字色，卡片与圆环按外观模式取深/浅配色
+- **零构建**：单个手写 CommonJS 文件，无打包、无依赖
+- **不启动 App 也能测**：`node test/smoke.cjs` 用假会话渲染并断言数值
 
-## Screenshots
+## 截图
 
-| Token usage card | Context card |
+| Token 用量卡片 | 上下文卡片 |
 | --- | --- |
-| ![Token usage card](assets/screenshot-usage.png) | ![Context card](assets/screenshot-context.png) |
+| ![Token 用量卡片](assets/screenshot-usage.png) | ![上下文卡片](assets/screenshot-context.png) |
 
-Captured on a real session, so the numbers are whatever that session happened to do.
+截图取自真实会话，数字就是当时那次会话的实际表现。
 
-## Requirements
+## 环境要求
 
-- **OpenCode Desktop 2.3.0 or newer** (the GUI plugin API is marked experimental and may change between releases).
-- Nothing else. No `@opencode/plugin` install on your side — the app provides the shared modules.
+- **OpenCode 桌面版 2.3.0 或更新**（GUI 插件 API 标注为 experimental，版本间可能变化）
+- 其它一概不需要，宿主会提供共享模块
 
-## Install
+## 安装
 
-1. Clone the repo:
+1. 把仓库克隆到任意位置，例如 `~/plugins`：
 
    ```bash
    git clone https://github.com/homecom2233/opencode-infobar ~/plugins/opencode-infobar
    ```
 
-   (Or copy the folder anywhere by hand — it is just a handful of files.)
-2. Add it to your **global** config, `~/.config/opencode/opencode.json`:
+2. 写进**全局**配置 `~/.config/opencode/opencode.json`：
 
    ```json
    {
      "$schema": "https://opencode.ai/config.json",
-     "plugins": ["~/plugins/opencode-infobar"]
+     "plugins": ["D:/DSHwork/opencode-infobar"]
    }
    ```
 
-   Use an absolute path. Relative paths resolve from the config file that contains the entry.
-3. Reload the OpenCode window (`Ctrl+R`) — the strip appears at the bottom, above toasts.
+   用绝对路径；相对路径是相对「包含该条目的配置文件」解析的。
+3. 刷新窗口（`Ctrl+R`），底部即出现状态栏。
 
-The plugin id is the package name / directory name, so **the folder name matters**: rename the folder and you get a different plugin id.
+插件 id 取包名/目录名，**目录名即 id**：改名等于换了一个插件。
 
-To update after pulling changes, just reload the window; the Desktop app re-reads the bundle from disk on every load. There is no cache to clear for a directory install (unlike npm packages, which OpenCode pins at the first resolved version).
+更新代码后只需刷新窗口——目录安装的 bundle 每次加载都会从磁盘重读，不像 npm 包会被钉在首次解析的版本上（需要清 `~/.cache/opencode/packages` 才行）。
 
-## What the numbers mean
+## 数值口径
 
-| Segment | Value | Formula |
+| 段 | 值 | 公式 |
 | --- | --- | --- |
-| `⟳ 3 轮 93 步` | rounds = user messages, steps = LLM calls | counted from the loaded message window |
-| `· 90 tok/s` | decode speed of the latest step | `(output + reasoning) / decode window` |
-| `⛁ 16.9M tok` | session total tokens | `input + cacheWrite + cacheRead + output + reasoning` |
-| `· 缓存命中率 98%` | prompt-cache hit rate | `cacheRead / (input + cacheRead + cacheWrite)` |
-| `◔ 27%` | context occupancy | `(input + cacheRead)` of the latest step ÷ the model's `limit.context` |
+| `⟳ 3 轮 93 步` | 轮数＝用户消息数，步数＝LLM 调用数 | 按已载入的消息统计 |
+| `· 90 tok/s` | 最近一步的解码速度 | `(output + reasoning) / 解码窗口` |
+| `⛁ 16.9M tok` | 会话总 token | `input + cacheWrite + cacheRead + output + reasoning` |
+| `· 缓存命中率 98%` | 缓存命中率 | `cacheRead / (input + cacheRead + cacheWrite)` |
+| `◔ 27%` | 上下文占用 | 最近一步的 `input + cacheRead` ÷ 模型 `limit.context` |
 
-Token totals come from `SessionInfo.tokens` — the session-level aggregate the server keeps — so they are complete even when message history is paginated.
+token 总量取自 `SessionInfo.tokens`（服务端维护的会话级汇总），所以即使消息分页也不会少算。
 
-### The token-speed question
+### 速度为什么要另算
 
-Tool execution happens *between* assistant messages, so a per-message window already excludes tool waits. The error comes from inside the window. Measured over 213 real assistant messages on one machine (median tok/s):
+工具执行发生在**两条 assistant 消息之间**，按消息计算本来就排除了工具等待；误差来自消息内部的时间窗口。在本机 213 条真实 assistant 消息上实测（中位数）：
 
-| Window | Includes | Median |
+| 时间窗口 | 含什么 | 中位数 |
 | --- | --- | --- |
-| `created → completed` | first-token wait **and** step finalisation | 38.6 tok/s |
-| `contentFirst → completed` | drops the first-token wait, keeps finalisation | 86.7 tok/s |
-| **`contentFirst → streamed`** | **pure decode** — what this plugin uses | **136.0 tok/s** |
+| `created → completed` | 首 token 等待 **+** 收尾 | 38.6 tok/s |
+| `contentFirst → completed` | 去掉首 token 等待，保留收尾 | 86.7 tok/s |
+| **`contentFirst → streamed`** | **纯解码，本插件采用** | **136.0 tok/s** |
 
-`time.firstToken` is reported rarely (8 of 215 messages here), so the start is `firstToken ?? earliest text/reasoning part time.created ?? created` — tool parts are excluded, they are created at the end of the stream. The end is `streamed ?? completed`. "Model time" in the card uses `created → last chunk` instead, so it complements "tool time" rather than duplicating decode time.
+`time.firstToken` 上报率很低（215 条里只有 8 条），所以起点取 `firstToken ?? 最早的 text/reasoning 片段 time.created ?? created`（工具段不参与，它是在流末尾创建的），终点取 `streamed ?? completed`。卡片里的「模型用时」改用 `created → 最后一帧`，与「工具调用用时」互补，不与解码时间重复。
 
-## Commands
+## 命令
 
-Both live in the command palette:
-
-| Command | Id | Does |
+| 命令 | id | 作用 |
 | --- | --- | --- |
-| Hide/show the bar | `opencode-infobar.toggle` | toggles the strip until the window reloads |
-| Copy diagnostics | `opencode-infobar.copy` | copies every raw number as JSON — useful when a value looks wrong |
+| 隐藏/显示底部状态栏 | `opencode-infobar.toggle` | 临时收起（刷新后恢复） |
+| 复制诊断信息 | `opencode-infobar.copy` | 把所有原始数字复制成 JSON，数值可疑时用 |
 
-## Customising
+## 自定义
 
-Everything is in `gui-experimental.cjs`, no build needed — edit and reload the window.
+全部在 `gui-experimental.cjs`，改完刷新窗口即可：
 
-- colours: `GREEN` / `ORANGE` / `RED` at the top, and `ringAccent` in `theme()`
-- labels and segment order: `buildStrip()`
-- card rows: `buildPanels()`
-- what is measured: `readSnapshot()` is the single exit point
+- 配色：顶部的 `GREEN` / `ORANGE` / `RED`，以及 `theme()` 里的 `ringAccent`
+- 文案与段顺序：`buildStrip()`
+- 卡片行：`buildPanels()`
+- 指标口径：`readSnapshot()` 是唯一出口
 
-The UI strings are in Chinese (this was written for a Chinese-speaking user). Swap them in `buildStrip()` and `buildPanels()` if you want another language.
+目前 UI 文案是中文，改成其它语言只需替换 `buildStrip()` 和 `buildPanels()` 里的字符串。
 
-## Development
+## 开发
 
 ```bash
 node test/smoke.cjs
 ```
 
-The test loads the bundle with stubbed host modules and a fake DOM, then asserts the strip text, the ring offset, and the panel switch. No OpenCode instance required.
+这个测试用桩宿主模块 + 假 DOM 加载 bundle，断言三段文本、圆环偏移量和卡片切换，不需要跑 OpenCode。
 
-Layout of the repo:
+仓库结构：
 
 ```
-gui-experimental.cjs   the plugin: GUI part, CommonJS, no dependencies
-package.json           identity + exports map (./gui-experimental)
-test/smoke.cjs         offline smoke test
-assets/screenshot-*.png  the three cards, captured on a real session
+gui-experimental.cjs      插件本体：GUI 部位，CommonJS，无依赖
+package.json              包身份 + exports 映射（./gui-experimental）
+test/smoke.cjs            离线冒烟测试
+assets/screenshot-*.png   三张卡片的真实截图
 ```
 
-## How it loads (for plugin authors)
+## 加载机制（给插件作者）
 
-OpenCode plugins are one package with up to four parts, loaded by different hosts:
+OpenCode 插件是一个包，最多四个部位，由不同宿主加载：
 
-| Part | Export | Loaded by | Config |
+| 部位 | 导出 | 谁加载 | 配置 |
 | --- | --- | --- | --- |
-| server | `.` / `./server` | the server | `opencode.json(c)` |
-| TUI | `./tui` | the terminal UI | `cli.json` |
-| GUI | `./gui-experimental` | OpenCode Desktop | global `opencode.json(c)` |
+| server | `.` / `./server` | 服务端 | `opencode.json(c)` |
+| TUI | `./tui` | 终端界面 | `cli.json` |
+| GUI | `./gui-experimental` | OpenCode 桌面版 | 全局 `opencode.json(c)` |
 
-A GUI bundle runs as CommonJS through a host-provided `require` that resolves **only** these modules: `@opencode/plugin/gui`, `@opencode/plugin/rpc`, `@opencode/schema/rpc`, `@opencode/client`, `@opencode/client/effect`, `@opencode/client/solid`, `effect`, `solid-js`, `solid-js/web`, `solid-js/store` (plus inert placeholders for Node built-ins and `electron`). Anything else throws `Plugin GUI bundle requires a module the app does not share`. `solid-js/h` is *not* on the list, which is why this plugin builds its DOM by hand and wires reactivity through `insert` / `createMemo`.
+GUI bundle 以 CommonJS 执行，`require` 只能解析这些模块：`@opencode/plugin/gui`、`@opencode/plugin/rpc`、`@opencode/schema/rpc`、`@opencode/client`、`@opencode/client/effect`、`@opencode/client/solid`、`effect`、`solid-js`、`solid-js/web`、`solid-js/store`，以及 Node 内置模块与 `electron` 的惰性占位符。用其它模块会抛 `Plugin GUI bundle requires a module the app does not share`。`solid-js/h` **不在**白名单里，所以本插件手写 DOM，并用 `insert` / `createMemo` 接响应式。
 
-The bundle must default-export a `Plugin.define` and declare a `setup`, a `main`, or both.
+bundle 必须 default-export 一个 `Plugin.define`，且至少声明 `setup` 或 `main` 之一。
 
-## Caveats
+## 已知限制
 
-- **Rounds and steps are counted from the loaded message window.** Long sessions are paginated, so the numbers can be lower than the truth; token totals and hit rate are unaffected.
-- **The context ring needs `limit.context`.** Providers that do not report model limits leave the ring at `—`.
-- **The GUI plugin API is experimental.** A future OpenCode release may change it; treat this as a hobby plugin, not an API contract.
-- Sessions with a single assistant message show a ring but no meaningful speed trend.
+- **轮/步按已载入消息统计**：长会话消息是分页的，数字可能偏小；token 总量与命中率不受影响。
+- **上下文环依赖 `limit.context`**：provider 不报模型上限时该环显示 `—`。
+- **GUI 插件 API 是 experimental**：未来版本可能变更。
+- 只有一条 assistant 消息的会话里，速度没有可比对的趋势。
 
-## Uninstall
+## 卸载
 
-Remove the entry from `plugins` in your global `opencode.json` and restart OpenCode. The folder can stay where it is.
+从全局 `opencode.json` 的 `plugins` 里删掉对应条目，重启 OpenCode；目录可以留着。
 
-## License
+## 许可
 
-MIT — see [LICENSE](LICENSE).
+MIT，见 [LICENSE](LICENSE)。

@@ -1,7 +1,7 @@
 {
   "name": "opencode-infobar",
   "version": "0.1.0",
-  "description": "Bottom status bar for OpenCode Desktop: prompt-cache hit rate, token speed, and a context ring, with click-through detail panels.",
+  "description": "OpenCode 桌面版底部状态栏：提示词缓存命中率、输出速度与上下文比例环，分段点按查看明细。Bottom status bar for OpenCode Desktop: prompt-cache hit rate, token speed and a context ring (English: README.en.md).",
   "type": "module",
   "exports": {
     "./gui-experimental": "./gui-experimental.cjs"
