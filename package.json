@@ -9,11 +9,14 @@
   "files": [
     "gui-experimental.cjs",
     "README.md",
-    "LICENSE"
+    "README.en.md",
+    "LICENSE",
+    "assets"
   ],
   "keywords": [
     "opencode",
     "opencode-plugin",
+    "opencode-desktop",
     "statusline",
     "cache-hit-rate",
     "tokens-per-second",
@@ -29,7 +32,11 @@
   "bugs": {
     "url": "https://github.com/homecom2233/opencode-infobar/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "test": "node test/smoke.cjs"
+    "test": "node test/smoke.cjs",
+    "prepublishOnly": "node test/smoke.cjs"
   }
 }

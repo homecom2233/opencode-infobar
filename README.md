@@ -41,27 +41,47 @@ OpenCode 桌面版不显示提示词缓存的命中情况、token 的实际到�
 
 ## 安装
 
+### 方式一：npm（推荐）
+
+```bash
+opencode plugin add opencode-infobar
+```
+
+或者直接在全局 `~/.config/opencode/opencode.json` 里声明：
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["opencode-infobar"]
+}
+```
+
+重启 OpenCode 后生效。npm 包会被钉在首次解析到的版本上，升级要显式指定版本或先清掉 `~/.cache/opencode/packages/opencode-infobar@latest`。
+
+### 方式二：本地目录
+
 1. 把仓库克隆到任意位置，例如 `~/plugins`：
 
    ```bash
    git clone https://github.com/homecom2233/opencode-infobar ~/plugins/opencode-infobar
    ```
 
-2. 写进**全局**配置 `~/.config/opencode/opencode.json`：
+2. 把路径写进**全局**配置 `~/.config/opencode/opencode.json`：
 
    ```json
    {
      "$schema": "https://opencode.ai/config.json",
-     "plugins": ["D:/DSHwork/opencode-infobar"]
+     "plugins": ["~/plugins/opencode-infobar"]
    }
    ```
 
    用绝对路径；相对路径是相对「包含该条目的配置文件」解析的。
+
 3. 刷新窗口（`Ctrl+R`），底部即出现状态栏。
 
 插件 id 取包名/目录名，**目录名即 id**：改名等于换了一个插件。
 
-更新代码后只需刷新窗口——目录安装的 bundle 每次加载都会从磁盘重读，不像 npm 包会被钉在首次解析的版本上（需要清 `~/.cache/opencode/packages` 才行）。
+本地目录安装的好处是改完代码只需刷新窗口——bundle 每次加载都从磁盘重读。
 
 ## 数值口径
 
@@ -121,6 +141,8 @@ package.json              包身份 + exports 映射（./gui-experimental）
 test/smoke.cjs            离线冒烟测试
 assets/screenshot-*.png   三张卡片的真实截图
 ```
+
+发版与上架流程（npm、opencode.im、官方 ecosystem 列表）见 [PUBLISHING.md](PUBLISHING.md)，版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 加载机制（给插件作者）
 

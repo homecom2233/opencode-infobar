@@ -41,6 +41,25 @@ Captured on a real session, so the numbers are whatever that session happened to
 
 ## Install
 
+### Option 1: npm (recommended)
+
+```bash
+opencode plugin add opencode-infobar
+```
+
+Or declare it in your global `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["opencode-infobar"]
+}
+```
+
+Restart OpenCode. npm packages are pinned to the first resolved version; to upgrade, ask for a version explicitly or clear `~/.cache/opencode/packages/opencode-infobar@latest` first.
+
+### Option 2: a local directory
+
 1. Clone the repo:
 
    ```bash
@@ -62,7 +81,7 @@ Captured on a real session, so the numbers are whatever that session happened to
 
 The plugin id is the package name / directory name, so **the folder name matters**: rename the folder and you get a different plugin id.
 
-To update after pulling changes, just reload the window; the Desktop app re-reads the bundle from disk on every load. There is no cache to clear for a directory install (unlike npm packages, which OpenCode pins at the first resolved version).
+A directory install reloads straight from disk, so editing the file and reloading the window is the whole loop.
 
 ## What the numbers mean
 
@@ -124,6 +143,8 @@ package.json           identity + exports map (./gui-experimental)
 test/smoke.cjs         offline smoke test
 assets/screenshot-*.png  the three cards, captured on a real session
 ```
+
+Releasing and listing (npm, opencode.im, the official ecosystem page) is documented in [PUBLISHING.md](PUBLISHING.md); version history lives in [CHANGELOG.md](CHANGELOG.md).
 
 ## How it loads (for plugin authors)
 
